@@ -8,6 +8,16 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol SphereMenuDelegate <NSObject>
+
+- (void)sphereDidSelected:(int)index;
+
+@end
+
 @interface SphereMenu : UIView
+
+@property (weak, nonatomic) id<SphereMenuDelegate> delegate;
+
+- (instancetype)initWithStartPoint:(CGPoint)startPoint startImage:(UIImage *)startImage submenuImages:(NSArray *)images;
 
 @end

@@ -7,6 +7,7 @@
 //
 
 #import "ViewController.h"
+#import "SphereMenu.h"
 
 @interface ViewController ()
 
@@ -17,7 +18,13 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view, typically from a nib.
+    
+    self.view.backgroundColor = [UIColor colorWithRed:0.49 green:0.76 blue:0.38 alpha:1];
+    
+    UIImage *startImage = [UIImage imageNamed:@"start"];
+    NSArray *images = @[[UIImage imageNamed:@"share_email_button_normal"], [UIImage imageNamed:@"share_twitter_button_normal"], [UIImage imageNamed:@"share_facebook_button_normal"]];
+    SphereMenu *sphereMenu = [[SphereMenu alloc] initWithStartPoint:CGPointMake(160, 200) startImage:startImage submenuImages:images];
+    [self.view addSubview:sphereMenu];
 }
 
 - (void)didReceiveMemoryWarning
