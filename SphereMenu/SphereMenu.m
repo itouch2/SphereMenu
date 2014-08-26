@@ -109,6 +109,15 @@ static const CGFloat length = 80;
         snap.damping = 0.25;
         [self.snaps addObject:snap];
     }
+    
+    self.itemBehavior = [[UIDynamicItemBehavior alloc] initWithItems:self.items];
+    self.itemBehavior.allowsRotation = NO;
+    self.itemBehavior.elasticity = 1.2;
+    self.itemBehavior.density = 0;
+    self.itemBehavior.angularResistance = 5;
+    self.itemBehavior.resistance = 10;
+    self.itemBehavior.elasticity = 0;
+    self.itemBehavior.friction = 0;
 }
 
 - (CGPoint)centerForSphereAtIndex:(int)index
@@ -132,6 +141,8 @@ static const CGFloat length = 80;
 - (void)startTapped:(UITapGestureRecognizer *)gesture
 {
     [self.animator removeBehavior:self.collision];
+    [self.animator removeBehavior:self.itemBehavior];
+    [self removeSnapBehaviors];
     
     if (self.expanded) {
         [self shrinkSubmenu];
@@ -144,8 +155,6 @@ static const CGFloat length = 80;
 
 - (void)expandSubmenu
 {
-    [self removeSnapBehaviors];
-    
     for (int i = 0; i < self.count; i++) {
         [self snapToPostionsWithIndex:i];
     }
@@ -153,8 +162,6 @@ static const CGFloat length = 80;
 
 - (void)shrinkSubmenu
 {
-    [self removeSnapBehaviors];
-
     for (int i = 0; i < self.count; i++) {
         [self snapToStartWithIndex:i];
     }
@@ -164,6 +171,7 @@ static const CGFloat length = 80;
 {
     UIView *touchedView = gesture.view;
     if (gesture.state == UIGestureRecognizerStateBegan) {
+        [self.animator removeBehavior:self.itemBehavior];
         [self.animator removeBehavior:self.collision];
         [self removeSnapBehaviors];
     } else if (gesture.state == UIGestureRecognizerStateChanged) {
@@ -171,7 +179,6 @@ static const CGFloat length = 80;
     } else if (gesture.state == UIGestureRecognizerStateEnded) {
         self.bumper = touchedView;
         [self.animator addBehavior:self.collision];
-        
         NSUInteger index = [self.items indexOfObject:touchedView];
         if (index != NSNotFound) {
             [self snapToPostionsWithIndex:index];
@@ -181,6 +188,8 @@ static const CGFloat length = 80;
 
 - (void)collisionBehavior:(UICollisionBehavior *)behavior endedContactForItem:(id<UIDynamicItem>)item1 withItem:(id<UIDynamicItem>)item2
 {
+    [self.animator addBehavior:self.itemBehavior];
+    
     if (item1 != self.bumper) {
         NSUInteger index = (int)[self.items indexOfObject:item1];
         if (index != NSNotFound) {
