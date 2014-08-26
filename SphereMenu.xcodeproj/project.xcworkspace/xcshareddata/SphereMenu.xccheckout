@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>D74E715F-09C1-4AB9-A5A3-F039E3F29C3C</string>
+	<key>IDESourceControlProjectName</key>
+	<string>SphereMenu</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>E067E36B-E08A-4B28-B35A-8FDDF9812BED</key>
+		<string>https://github.com/itouch2/SphereMenu.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>SphereMenu.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>E067E36B-E08A-4B28-B35A-8FDDF9812BED</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/itouch2/SphereMenu.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>E067E36B-E08A-4B28-B35A-8FDDF9812BED</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>E067E36B-E08A-4B28-B35A-8FDDF9812BED</string>
+			<key>IDESourceControlWCCName</key>
+			<string>SphereMenu</string>
+		</dict>
+	</array>
+</dict>
+</plist>
