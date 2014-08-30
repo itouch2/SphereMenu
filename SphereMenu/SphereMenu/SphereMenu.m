@@ -8,16 +8,19 @@
 
 #import "SphereMenu.h"
 
-static const CGFloat angleOffset = M_PI_2 / 2;
-static const CGFloat length = 80;
+static const CGFloat kAngleOffset = M_PI_2 / 2;
+static const CGFloat kSphereLength = 80;
+static const float kSphereDamping = 0.3;
 
 @interface SphereMenu () <UICollisionBehaviorDelegate>
 
 @property (assign, nonatomic) NSUInteger count ;
+@property (strong, nonatomic) UIImageView *start;
 @property (strong, nonatomic) NSArray *images;
 @property (strong, nonatomic) NSMutableArray *items;
 @property (strong, nonatomic) NSMutableArray *positions;
 
+// animator and behaviors
 @property (strong, nonatomic) UIDynamicAnimator *animator;
 @property (strong, nonatomic) UICollisionBehavior *collision;
 @property (strong, nonatomic) UIDynamicItemBehavior *itemBehavior;
@@ -27,9 +30,6 @@ static const CGFloat length = 80;
 @property (strong, nonatomic) UITapGestureRecognizer *tapOnStart;
 
 @property (strong, nonatomic) id<UIDynamicItem> bumper;
-
-@property (strong, nonatomic) UIImageView *start;
-
 @property (assign, nonatomic) BOOL expanded;
 
 @end
@@ -92,18 +92,18 @@ static const CGFloat length = 80;
     
     for (int i = 0; i < self.count; i++) {
         UISnapBehavior *snap = [[UISnapBehavior alloc] initWithItem:self.items[i] snapToPoint:self.center];
-        snap.damping = 0.25;
+        snap.damping = kSphereDamping;
         [self.snaps addObject:snap];
     }
     
     self.itemBehavior = [[UIDynamicItemBehavior alloc] initWithItems:self.items];
     self.itemBehavior.allowsRotation = NO;
     self.itemBehavior.elasticity = 1.2;
-    self.itemBehavior.density = 0;
+    self.itemBehavior.density = 0.5;
     self.itemBehavior.angularResistance = 5;
     self.itemBehavior.resistance = 10;
-    self.itemBehavior.elasticity = 0;
-    self.itemBehavior.friction = 0;
+    self.itemBehavior.elasticity = 0.8;
+    self.itemBehavior.friction = 0.5;
 }
 
 - (void)didMoveToSuperview
@@ -122,10 +122,10 @@ static const CGFloat length = 80;
 
 - (CGPoint)centerForSphereAtIndex:(int)index
 {
-    CGFloat firstAngle = M_PI + (M_PI_2 - angleOffset) + index * angleOffset;
+    CGFloat firstAngle = M_PI + (M_PI_2 - kAngleOffset) + index * kAngleOffset;
     CGPoint startPoint = self.center;
-    CGFloat x = startPoint.x + cos(firstAngle) * length;
-    CGFloat y = startPoint.y + sin(firstAngle) * length;
+    CGFloat x = startPoint.x + cos(firstAngle) * kSphereLength;
+    CGFloat y = startPoint.y + sin(firstAngle) * kSphereLength;
     CGPoint position = CGPointMake(x, y);
     return position;
 }
@@ -180,6 +180,7 @@ static const CGFloat length = 80;
         self.bumper = touchedView;
         [self.animator addBehavior:self.collision];
         NSUInteger index = [self.items indexOfObject:touchedView];
+        
         if (index != NSNotFound) {
             [self snapToPostionsWithIndex:index];
         }
@@ -208,7 +209,7 @@ static const CGFloat length = 80;
 - (void)snapToStartWithIndex:(NSUInteger)index
 {
     UISnapBehavior *snap = [[UISnapBehavior alloc] initWithItem:self.items[index] snapToPoint:self.center];
-    snap.damping = 0.25;
+    snap.damping = kSphereDamping;
     UISnapBehavior *snapToRemove = self.snaps[index];
     self.snaps[index] = snap;
     [self.animator removeBehavior:snapToRemove];
@@ -220,7 +221,7 @@ static const CGFloat length = 80;
     id positionValue = self.positions[index];
     CGPoint position = [positionValue CGPointValue];
     UISnapBehavior *snap = [[UISnapBehavior alloc] initWithItem:self.items[index] snapToPoint:position];
-    snap.damping = 0.25;
+    snap.damping = kSphereDamping;
     UISnapBehavior *snapToRemove = self.snaps[index];
     self.snaps[index] = snap;
     [self.animator removeBehavior:snapToRemove];

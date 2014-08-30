@@ -27,10 +27,8 @@
     UIImage *image2 = [UIImage imageNamed:@"share_email_button_normal"];
     UIImage *image3 = [UIImage imageNamed:@"share_facebook_button_normal"];
     NSArray *images = @[image1, image2, image3];
-    SphereMenu *sphereMenu = [[SphereMenu alloc] initWithStartPoint:CGPointMake(160, 200) startImage:startImage submenuImages:images];
+    SphereMenu *sphereMenu = [[SphereMenu alloc] initWithStartPoint:CGPointMake(160, 250) startImage:startImage submenuImages:images];
     [self.view addSubview:sphereMenu];
-    
-    [sphereMenu removeFromSuperview];
 }
 
 - (void)didReceiveMemoryWarning
