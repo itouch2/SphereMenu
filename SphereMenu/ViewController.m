@@ -19,7 +19,7 @@
 {
     [super viewDidLoad];
     
-    self.view.backgroundColor = [UIColor colorWithRed:1 green:0.52 blue:0 alpha:1];
+    self.view.backgroundColor = [UIColor colorWithRed:1 green:0.60 blue:0.25 alpha:1];
     
     UIImage *startImage = [UIImage imageNamed:@"start"];
     
@@ -27,7 +27,7 @@
     UIImage *image2 = [UIImage imageNamed:@"share_email_button_normal"];
     UIImage *image3 = [UIImage imageNamed:@"share_facebook_button_normal"];
     NSArray *images = @[image1, image2, image3];
-    SphereMenu *sphereMenu = [[SphereMenu alloc] initWithStartPoint:CGPointMake(160, 250) startImage:startImage submenuImages:images];
+    SphereMenu *sphereMenu = [[SphereMenu alloc] initWithStartPoint:CGPointMake(160, 300) startImage:startImage submenuImages:images];
     [self.view addSubview:sphereMenu];
 }
 
