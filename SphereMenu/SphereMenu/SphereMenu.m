@@ -136,6 +136,8 @@ static const float kSphereDamping = 0.3;
     if ([self.delegate respondsToSelector:@selector(sphereDidSelected:)]) {
         [self.delegate sphereDidSelected:(int)index];
     }
+    
+    [self shrinkSubmenu];
 }
 
 - (void)startTapped:(UITapGestureRecognizer *)gesture

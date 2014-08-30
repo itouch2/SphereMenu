@@ -9,7 +9,7 @@
 #import "ViewController.h"
 #import "SphereMenu.h"
 
-@interface ViewController ()
+@interface ViewController () <SphereMenuDelegate>
 
 @end
 
@@ -19,16 +19,21 @@
 {
     [super viewDidLoad];
     
-    self.view.backgroundColor = [UIColor colorWithRed:1 green:0.60 blue:0.25 alpha:1];
+    self.view.backgroundColor = [UIColor colorWithRed:1 green:0.58 blue:0.27 alpha:1];
     
     UIImage *startImage = [UIImage imageNamed:@"start"];
-    
-    UIImage *image1 = [UIImage imageNamed:@"share_twitter_button_normal"];
-    UIImage *image2 = [UIImage imageNamed:@"share_email_button_normal"];
-    UIImage *image3 = [UIImage imageNamed:@"share_facebook_button_normal"];
+    UIImage *image1 = [UIImage imageNamed:@"icon-twitter"];
+    UIImage *image2 = [UIImage imageNamed:@"icon-email"];
+    UIImage *image3 = [UIImage imageNamed:@"icon-facebook"];
     NSArray *images = @[image1, image2, image3];
-    SphereMenu *sphereMenu = [[SphereMenu alloc] initWithStartPoint:CGPointMake(160, 300) startImage:startImage submenuImages:images];
+    SphereMenu *sphereMenu = [[SphereMenu alloc] initWithStartPoint:CGPointMake(160, 320) startImage:startImage submenuImages:images];
+    sphereMenu.delegate = self;
     [self.view addSubview:sphereMenu];
+}
+
+- (void)sphereDidSelected:(int)index
+{
+    NSLog(@"sphere %d selected", index);
 }
 
 - (void)didReceiveMemoryWarning
