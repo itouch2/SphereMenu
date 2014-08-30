@@ -16,6 +16,9 @@ sphereMenu.delegate = self;
 [self.view addSubview:sphereMenu];
 ```
 
-
 ## A Quick Peek
 ![screenshots](https://cloud.githubusercontent.com/assets/4316898/4098401/7cc3710e-301b-11e4-83ba-529349111c4d.gif)
+
+## License
+
+SphereMenu is available under the MIT license, see the LICENSE file for more information.     
