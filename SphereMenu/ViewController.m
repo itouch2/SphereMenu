@@ -29,12 +29,13 @@
     NSArray *images = @[image1, image2, image3];
     SphereMenu *sphereMenu = [[SphereMenu alloc] initWithStartPoint:CGPointMake(160, 200) startImage:startImage submenuImages:images];
     [self.view addSubview:sphereMenu];
+    
+    [sphereMenu removeFromSuperview];
 }
 
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle

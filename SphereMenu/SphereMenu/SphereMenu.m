@@ -37,53 +37,39 @@ static const CGFloat length = 80;
 
 @implementation SphereMenu
 
-- (instancetype)initWithFrame:(CGRect)frame
-{
-    self = [super initWithFrame:frame];
-    if (self) {
-    }
-    return self;
-}
-
 - (instancetype)initWithStartPoint:(CGPoint)startPoint startImage:(UIImage *)startImage submenuImages:(NSArray *)images
 {
     if (self = [super init]) {
         
-        self.frame = CGRectMake(0, 0, 320, 564);
+        self.bounds = CGRectMake(0, 0, startImage.size.width, startImage.size.height);
+        self.center = startPoint;
         
         self.images = images;
-        
         self.count = self.images.count;
-        
-        self.start = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 60, 60)];
-        self.start.center = CGPointMake(160, 300);
-        self.start.image = startImage;
+        self.start = [[UIImageView alloc] initWithImage:startImage];
         self.start.userInteractionEnabled = YES;
-        
         self.tapOnStart = [[UITapGestureRecognizer alloc] initWithTarget:self
                                                                   action:@selector(startTapped:)];
         [self.start addGestureRecognizer:self.tapOnStart];
         [self addSubview:self.start];
-        
-        self.snaps = [NSMutableArray array];
-        
-        [self commonInit];
     }
     return self;
 }
 
-- (void)commonInit
+- (void)commonSetup
 {
     self.items = [NSMutableArray array];
     self.positions = [NSMutableArray array];
+    self.snaps = [NSMutableArray array];
+
     // setup the items
     for (int i = 0; i < self.count; i++) {
         UIImageView *item = [[UIImageView alloc] initWithImage:self.images[i]];
         item.userInteractionEnabled = YES;
-        [self addSubview:item];
+        [self.superview addSubview:item];
         
         CGPoint position = [self centerForSphereAtIndex:i];
-        item.center = self.start.center;
+        item.center = self.center;
         [self.positions addObject:[NSValue valueWithCGPoint:position]];
         
         UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapped:)];
@@ -95,17 +81,17 @@ static const CGFloat length = 80;
         [self.items addObject:item];
     }
     
-    [self bringSubviewToFront:self.start];
+    [self.superview bringSubviewToFront:self];
     
-    // setup behavior and animator
-    self.animator = [[UIDynamicAnimator alloc] initWithReferenceView:self];
+    // setup animator and behavior
+    self.animator = [[UIDynamicAnimator alloc] initWithReferenceView:self.superview];
     
     self.collision = [[UICollisionBehavior alloc] initWithItems:self.items];
     self.collision.translatesReferenceBoundsIntoBoundary = YES;
     self.collision.collisionDelegate = self;
     
     for (int i = 0; i < self.count; i++) {
-        UISnapBehavior *snap = [[UISnapBehavior alloc] initWithItem:self.items[i] snapToPoint:self.start.center];
+        UISnapBehavior *snap = [[UISnapBehavior alloc] initWithItem:self.items[i] snapToPoint:self.center];
         snap.damping = 0.25;
         [self.snaps addObject:snap];
     }
@@ -120,14 +106,28 @@ static const CGFloat length = 80;
     self.itemBehavior.friction = 0;
 }
 
+- (void)didMoveToSuperview
+{
+    [self commonSetup];
+}
+
+- (void)removeFromSuperview
+{
+    for (int i = 0; i < self.count; i++) {
+        [self.items[i] removeFromSuperview];
+    }
+    
+    [super removeFromSuperview];
+}
+
 - (CGPoint)centerForSphereAtIndex:(int)index
 {
     CGFloat firstAngle = M_PI + (M_PI_2 - angleOffset) + index * angleOffset;
-    CGPoint startPoint = self.start.center;
+    CGPoint startPoint = self.center;
     CGFloat x = startPoint.x + cos(firstAngle) * length;
     CGFloat y = startPoint.y + sin(firstAngle) * length;
-    CGPoint center = CGPointMake(x, y);
-    return center;
+    CGPoint position = CGPointMake(x, y);
+    return position;
 }
 
 - (void)tapped:(UITapGestureRecognizer *)gesture
@@ -175,7 +175,7 @@ static const CGFloat length = 80;
         [self.animator removeBehavior:self.collision];
         [self removeSnapBehaviors];
     } else if (gesture.state == UIGestureRecognizerStateChanged) {
-        touchedView.center = [gesture locationInView:self];
+        touchedView.center = [gesture locationInView:self.superview];
     } else if (gesture.state == UIGestureRecognizerStateEnded) {
         self.bumper = touchedView;
         [self.animator addBehavior:self.collision];
@@ -207,7 +207,7 @@ static const CGFloat length = 80;
 
 - (void)snapToStartWithIndex:(NSUInteger)index
 {
-    UISnapBehavior *snap = [[UISnapBehavior alloc] initWithItem:self.items[index] snapToPoint:self.start.center];
+    UISnapBehavior *snap = [[UISnapBehavior alloc] initWithItem:self.items[index] snapToPoint:self.center];
     snap.damping = 0.25;
     UISnapBehavior *snapToRemove = self.snaps[index];
     self.snaps[index] = snap;

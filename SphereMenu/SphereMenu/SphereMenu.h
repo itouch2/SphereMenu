@@ -18,6 +18,8 @@
 
 @property (weak, nonatomic) id<SphereMenuDelegate> delegate;
 
-- (instancetype)initWithStartPoint:(CGPoint)startPoint startImage:(UIImage *)startImage submenuImages:(NSArray *)images;
+- (instancetype)initWithStartPoint:(CGPoint)startPoint
+                        startImage:(UIImage *)startImage
+                     submenuImages:(NSArray *)images;
 
 @end
