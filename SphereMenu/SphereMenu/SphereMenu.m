@@ -8,6 +8,7 @@
 
 #import "SphereMenu.h"
 
+static const int kItemInitTag = 1001;
 static const CGFloat kAngleOffset = M_PI_2 / 2;
 static const CGFloat kSphereLength = 80;
 static const float kSphereDamping = 0.3;
@@ -25,7 +26,6 @@ static const float kSphereDamping = 0.3;
 @property (strong, nonatomic) UICollisionBehavior *collision;
 @property (strong, nonatomic) UIDynamicItemBehavior *itemBehavior;
 @property (strong, nonatomic) NSMutableArray *snaps;
-@property (strong, nonatomic) NSMutableArray *taps;
 
 @property (strong, nonatomic) UITapGestureRecognizer *tapOnStart;
 
@@ -65,6 +65,7 @@ static const float kSphereDamping = 0.3;
     // setup the items
     for (int i = 0; i < self.count; i++) {
         UIImageView *item = [[UIImageView alloc] initWithImage:self.images[i]];
+        item.tag = kItemInitTag + i;
         item.userInteractionEnabled = YES;
         [self.superview addSubview:item];
         
@@ -132,9 +133,10 @@ static const float kSphereDamping = 0.3;
 
 - (void)tapped:(UITapGestureRecognizer *)gesture
 {
-    NSUInteger index = [self.taps indexOfObject:gesture];
     if ([self.delegate respondsToSelector:@selector(sphereDidSelected:)]) {
-        [self.delegate sphereDidSelected:(int)index];
+        int tag = gesture.view.tag;
+        tag -= kItemInitTag;
+        [self.delegate sphereDidSelected:tag];
     }
     
     [self shrinkSubmenu];
