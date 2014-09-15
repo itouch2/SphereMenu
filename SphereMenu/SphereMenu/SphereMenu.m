@@ -166,6 +166,8 @@ static const float kSphereDamping = 0.3;
 
 - (void)shrinkSubmenu
 {
+    [self.animator removeBehavior:self.collision];
+    
     for (int i = 0; i < self.count; i++) {
         [self snapToStartWithIndex:i];
     }
