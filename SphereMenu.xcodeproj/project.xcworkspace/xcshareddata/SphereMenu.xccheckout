@@ -10,29 +10,29 @@
 	<string>SphereMenu</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>E067E36B-E08A-4B28-B35A-8FDDF9812BED</key>
+		<key>32704FBC98C62B87AB408B5578AA0ADD9E778FAF</key>
 		<string>https://github.com/itouch2/SphereMenu.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>SphereMenu.xcodeproj/project.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>E067E36B-E08A-4B28-B35A-8FDDF9812BED</key>
+		<key>32704FBC98C62B87AB408B5578AA0ADD9E778FAF</key>
 		<string>../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
 	<string>https://github.com/itouch2/SphereMenu.git</string>
 	<key>IDESourceControlProjectVersion</key>
-	<integer>110</integer>
+	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>E067E36B-E08A-4B28-B35A-8FDDF9812BED</string>
+	<string>32704FBC98C62B87AB408B5578AA0ADD9E778FAF</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>E067E36B-E08A-4B28-B35A-8FDDF9812BED</string>
+			<string>32704FBC98C62B87AB408B5578AA0ADD9E778FAF</string>
 			<key>IDESourceControlWCCName</key>
 			<string>SphereMenu</string>
 		</dict>

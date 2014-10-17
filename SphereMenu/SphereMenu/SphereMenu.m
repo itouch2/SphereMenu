@@ -134,7 +134,7 @@ static const float kSphereDamping = 0.3;
 - (void)tapped:(UITapGestureRecognizer *)gesture
 {
     if ([self.delegate respondsToSelector:@selector(sphereDidSelected:)]) {
-        int tag = gesture.view.tag;
+        int tag = (int)gesture.view.tag;
         tag -= kItemInitTag;
         [self.delegate sphereDidSelected:tag];
     }
@@ -153,8 +153,6 @@ static const float kSphereDamping = 0.3;
     } else {
         [self expandSubmenu];
     }
-    
-    self.expanded = !self.expanded;
 }
 
 - (void)expandSubmenu
@@ -162,6 +160,8 @@ static const float kSphereDamping = 0.3;
     for (int i = 0; i < self.count; i++) {
         [self snapToPostionsWithIndex:i];
     }
+    
+    self.expanded = YES;
 }
 
 - (void)shrinkSubmenu
@@ -171,6 +171,8 @@ static const float kSphereDamping = 0.3;
     for (int i = 0; i < self.count; i++) {
         [self snapToStartWithIndex:i];
     }
+    
+    self.expanded = NO;
 }
 
 - (void)panned:(UIPanGestureRecognizer *)gesture
