@@ -26,9 +26,11 @@
     UIImage *image2 = [UIImage imageNamed:@"icon-email"];
     UIImage *image3 = [UIImage imageNamed:@"icon-facebook"];
     NSArray *images = @[image1, image2, image3];
-    SphereMenu *sphereMenu = [[SphereMenu alloc] initWithStartPoint:CGPointMake(160, 320)
+    SphereMenu *sphereMenu = [[SphereMenu alloc] initWithStartPoint:CGPointMake(CGRectGetWidth(self.view.frame) / 2, 320)
                                                          startImage:startImage
                                                       submenuImages:images];
+    sphereMenu.sphereDamping = 0.3;
+    sphereMenu.sphereLength = 85;
     sphereMenu.delegate = self;
     [self.view addSubview:sphereMenu];
 }

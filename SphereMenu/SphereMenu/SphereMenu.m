@@ -15,22 +15,22 @@ static const float kSphereDamping = 0.3;
 
 @interface SphereMenu () <UICollisionBehaviorDelegate>
 
-@property (assign, nonatomic) NSUInteger count ;
-@property (strong, nonatomic) UIImageView *start;
-@property (strong, nonatomic) NSArray *images;
-@property (strong, nonatomic) NSMutableArray *items;
-@property (strong, nonatomic) NSMutableArray *positions;
+@property (nonatomic, assign) NSUInteger count ;
+@property (nonatomic, strong) UIImageView *start;
+@property (nonatomic, strong) NSArray *images;
+@property (nonatomic, strong) NSMutableArray *items;
+@property (nonatomic, strong) NSMutableArray *positions;
 
 // animator and behaviors
-@property (strong, nonatomic) UIDynamicAnimator *animator;
-@property (strong, nonatomic) UICollisionBehavior *collision;
-@property (strong, nonatomic) UIDynamicItemBehavior *itemBehavior;
-@property (strong, nonatomic) NSMutableArray *snaps;
+@property (nonatomic, strong) UIDynamicAnimator *animator;
+@property (nonatomic, strong) UICollisionBehavior *collision;
+@property (nonatomic, strong) UIDynamicItemBehavior *itemBehavior;
+@property (nonatomic, strong) NSMutableArray *snaps;
 
-@property (strong, nonatomic) UITapGestureRecognizer *tapOnStart;
+@property (nonatomic, strong) UITapGestureRecognizer *tapOnStart;
 
-@property (strong, nonatomic) id<UIDynamicItem> bumper;
-@property (assign, nonatomic) BOOL expanded;
+@property (nonatomic, strong) id<UIDynamicItem> bumper;
+@property (nonatomic, assign) BOOL expanded;
 
 @end
 
@@ -44,14 +44,18 @@ static const float kSphereDamping = 0.3;
         self.bounds = CGRectMake(0, 0, startImage.size.width, startImage.size.height);
         self.center = startPoint;
         
-        self.images = images;
-        self.count = self.images.count;
-        self.start = [[UIImageView alloc] initWithImage:startImage];
-        self.start.userInteractionEnabled = YES;
-        self.tapOnStart = [[UITapGestureRecognizer alloc] initWithTarget:self
+        _angle = kAngleOffset;
+        _sphereLength = kSphereLength;
+        _sphereDamping = kSphereDamping;
+        
+        _images = images;
+        _count = self.images.count;
+        _start = [[UIImageView alloc] initWithImage:startImage];
+        _start.userInteractionEnabled = YES;
+        _tapOnStart = [[UITapGestureRecognizer alloc] initWithTarget:self
                                                                   action:@selector(startTapped:)];
-        [self.start addGestureRecognizer:self.tapOnStart];
-        [self addSubview:self.start];
+        [_start addGestureRecognizer:_tapOnStart];
+        [self addSubview:_start];
     }
     return self;
 }
@@ -93,7 +97,7 @@ static const float kSphereDamping = 0.3;
     
     for (int i = 0; i < self.count; i++) {
         UISnapBehavior *snap = [[UISnapBehavior alloc] initWithItem:self.items[i] snapToPoint:self.center];
-        snap.damping = kSphereDamping;
+        snap.damping = self.sphereDamping;
         [self.snaps addObject:snap];
     }
     
@@ -123,10 +127,10 @@ static const float kSphereDamping = 0.3;
 
 - (CGPoint)centerForSphereAtIndex:(int)index
 {
-    CGFloat firstAngle = M_PI + (M_PI_2 - kAngleOffset) + index * kAngleOffset;
+    CGFloat firstAngle = M_PI + (M_PI_2 - self.angle) + index * self.angle;
     CGPoint startPoint = self.center;
-    CGFloat x = startPoint.x + cos(firstAngle) * kSphereLength;
-    CGFloat y = startPoint.y + sin(firstAngle) * kSphereLength;
+    CGFloat x = startPoint.x + cos(firstAngle) * self.sphereLength;
+    CGFloat y = startPoint.y + sin(firstAngle) * self.sphereLength;
     CGPoint position = CGPointMake(x, y);
     return position;
 }
@@ -217,7 +221,7 @@ static const float kSphereDamping = 0.3;
 - (void)snapToStartWithIndex:(NSUInteger)index
 {
     UISnapBehavior *snap = [[UISnapBehavior alloc] initWithItem:self.items[index] snapToPoint:self.center];
-    snap.damping = kSphereDamping;
+    snap.damping = self.sphereDamping;
     UISnapBehavior *snapToRemove = self.snaps[index];
     self.snaps[index] = snap;
     [self.animator removeBehavior:snapToRemove];
@@ -229,7 +233,7 @@ static const float kSphereDamping = 0.3;
     id positionValue = self.positions[index];
     CGPoint position = [positionValue CGPointValue];
     UISnapBehavior *snap = [[UISnapBehavior alloc] initWithItem:self.items[index] snapToPoint:position];
-    snap.damping = kSphereDamping;
+    snap.damping = self.sphereDamping;
     UISnapBehavior *snapToRemove = self.snaps[index];
     self.snaps[index] = snap;
     [self.animator removeBehavior:snapToRemove];

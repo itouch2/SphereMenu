@@ -16,10 +16,15 @@
 
 @interface SphereMenu : UIView
 
-@property (weak, nonatomic) id<SphereMenuDelegate> delegate;
-
 - (instancetype)initWithStartPoint:(CGPoint)startPoint
                         startImage:(UIImage *)startImage
                      submenuImages:(NSArray *)images;
+
+@property (nonatomic, weak) id<SphereMenuDelegate> delegate;
+
+@property (nonatomic, assign) CGFloat angle;
+@property (nonatomic, assign) CGFloat sphereDamping;
+@property (nonatomic, assign) CGFloat sphereLength;
+
 
 @end
