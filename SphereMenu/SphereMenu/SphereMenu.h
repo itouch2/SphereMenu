@@ -2,29 +2,21 @@
 //  SphereMenu.h
 //  SphereMenu
 //
-//  Created by Tu You on 14-8-24.
-//  Copyright (c) 2014年 TU YOU. All rights reserved.
-//
 
 #import <UIKit/UIKit.h>
 
-@protocol SphereMenuDelegate <NSObject>
 
-- (void)sphereDidSelected:(int)index;
+typedef void (^SpherePickedMenu)(NSInteger index, UIView *menu);
 
-@end
+#define key_sphere_menu_image   @"img"
+#define key_sphere_menu_title   @"title"
+
 
 @interface SphereMenu : UIView
 
-- (instancetype)initWithStartPoint:(CGPoint)startPoint
-                        startImage:(UIImage *)startImage
-                     submenuImages:(NSArray *)images;
-
-@property (nonatomic, weak) id<SphereMenuDelegate> delegate;
-
-@property (nonatomic, assign) CGFloat angle;
-@property (nonatomic, assign) CGFloat sphereDamping;
-@property (nonatomic, assign) CGFloat sphereLength;
-
++ (instancetype)showSphereMenuWithAnchorView:(UIView *)anchorView
+                                 anchorImage:(UIImage *)anchorImg
+                                 sphereMenus:(NSArray *(^)())menus
+                                  pickedMenu:(SpherePickedMenu)completion;
 
 @end
