@@ -2,22 +2,63 @@
 //  SphereMenu.m
 //  SphereMenu
 //
-//  Created by Tu You on 14-8-24.
-//  Copyright (c) 2014年 TU YOU. All rights reserved.
-//
 
 #import "SphereMenu.h"
 
-static const int kItemInitTag = 1001;
 static const CGFloat kAngleOffset = M_PI_2 / 2;
-static const CGFloat kSphereLength = 80;
+static const CGFloat kSphereLength = 150;
 static const float kSphereDamping = 0.3;
 
-@interface SphereMenu () <UICollisionBehaviorDelegate>
 
-@property (nonatomic, assign) NSUInteger count ;
-@property (nonatomic, strong) UIImageView *start;
-@property (nonatomic, strong) NSArray *images;
+
+@protocol SphereModelViewDelegate <NSObject>
+
+@optional
+- (void)modelMenuViewDidTouchEnd:(id)menuView;
+
+@end
+
+
+@interface SphereModelView : UIView
+
+@property (nonatomic) id<SphereModelViewDelegate> delegate;
+
+@end
+
+
+@implementation SphereModelView
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        
+        self.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.3];
+    }
+    
+    return self;
+}
+
+- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+{
+    if ([self.delegate respondsToSelector:@selector(modelMenuViewDidTouchEnd:)]) {
+        
+        [self.delegate modelMenuViewDidTouchEnd:self];
+    }
+}
+
+@end
+
+
+
+
+@interface SphereMenu () <UICollisionBehaviorDelegate, SphereModelViewDelegate>
+
+
+@property (nonatomic, assign) CGFloat angle;
+@property (nonatomic, assign) CGFloat sphereDamping;
+@property (nonatomic, assign) CGFloat sphereLength;
+
 @property (nonatomic, strong) NSMutableArray *items;
 @property (nonatomic, strong) NSMutableArray *positions;
 
@@ -27,63 +68,190 @@ static const float kSphereDamping = 0.3;
 @property (nonatomic, strong) UIDynamicItemBehavior *itemBehavior;
 @property (nonatomic, strong) NSMutableArray *snaps;
 
-@property (nonatomic, strong) UITapGestureRecognizer *tapOnStart;
-
 @property (nonatomic, strong) id<UIDynamicItem> bumper;
 @property (nonatomic, assign) BOOL expanded;
+
+
+
+// -- add by Olive
+
+@property (nonatomic, strong) UIView *anchorView;
+
+@property (nonatomic, strong) UIImage *normalImage;
+
+@property (nonatomic, strong) UIButton *anchorBtn;
+
+@property (nonatomic, strong) SphereModelView *modelView;
+
+@property (nonatomic, strong) NSArray *menusViewArray;
+
+@property (nonatomic, strong) SpherePickedMenu pickedCompletion;
+
+// -- end by Olive
 
 @end
 
 
 @implementation SphereMenu
 
-- (instancetype)initWithStartPoint:(CGPoint)startPoint startImage:(UIImage *)startImage submenuImages:(NSArray *)images
+
++ (instancetype)showSphereMenuWithAnchorView:(UIView *)anchorView
+                                 anchorImage:(UIImage *)anchorImg
+                                 sphereMenus:(NSArray *(^)())menus
+                                  pickedMenu:(SpherePickedMenu)completion
 {
-    if (self = [super init]) {
-        
-        self.bounds = CGRectMake(0, 0, startImage.size.width, startImage.size.height);
-        self.center = startPoint;
+    SphereMenu *menu = [[SphereMenu alloc] init];
+    menu.menusViewArray = menus();
+    menu.anchorView = anchorView;
+    menu.pickedCompletion = completion;
+    
+    menu.normalImage = anchorImg;
+    
+    [menu show];
+    
+    
+    return menu;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
         
         _angle = kAngleOffset;
         _sphereLength = kSphereLength;
         _sphereDamping = kSphereDamping;
-        
-        _images = images;
-        _count = self.images.count;
-        _start = [[UIImageView alloc] initWithImage:startImage];
-        _start.userInteractionEnabled = YES;
-        _tapOnStart = [[UITapGestureRecognizer alloc] initWithTarget:self
-                                                                  action:@selector(startTapped:)];
-        [_start addGestureRecognizer:_tapOnStart];
-        [self addSubview:_start];
     }
+    
     return self;
 }
 
+- (UIWindow *)window
+{
+    return [[UIApplication sharedApplication] keyWindow];
+}
+
+- (SphereModelView *)modelView
+{
+    if (!_modelView) {
+        
+        _modelView = [[SphereModelView alloc] initWithFrame:self.window.bounds];
+        _modelView.delegate = self;
+    }
+    
+    return _modelView;
+}
+
+- (void)show
+{
+    //self.anchorView.hidden = YES;
+    
+    _angle = M_PI / (self.menusViewArray.count+1);
+    
+    [self.window addSubview:self.modelView];
+    
+    self.modelView.frame = CGRectMake(0, self.modelView.bounds.size.height, self.modelView.bounds.size.width, 0);
+    [UIView animateWithDuration:_sphereDamping
+                     animations:^{
+                         
+                         self.modelView.frame = self.window.bounds;
+                     }
+                     completion:^(BOOL finished) {
+                         
+                         
+                     }];
+    
+    //NSLog(@"anchor ori frame = %@", NSStringFromCGRect(self.anchorView.frame));
+    CGRect rect = [self.anchorView.superview convertRect:self.anchorView.frame toView:self.window];
+    //NSLog(@"rect = %@", NSStringFromCGRect(rect));
+    
+    self.frame = rect;
+    
+    
+    UIButton *btn = [UIButton buttonWithType:UIButtonTypeCustom];
+    btn.frame = self.bounds;
+    [btn setImage:self.normalImage forState:UIControlStateNormal];
+    [btn addTarget:self action:@selector(anchorBtnAction:) forControlEvents:UIControlEventTouchUpInside];
+    [self addSubview:btn];
+    
+    [self.window addSubview:self];
+    
+    
+    [self commonSetup];
+    
+    [self expandSubmenu];
+}
+
+#pragma mark -Action
+- (void)anchorBtnAction:(UIButton *)sender
+{
+    [self shrinkSubmenu:^{
+        
+    }];
+}
+
+- (void)menuItemPickedAction:(UIControl *)sender
+{
+    [self shrinkSubmenu:^{
+        
+        if (self.pickedCompletion) {
+         
+            NSInteger i = sender.tag;
+            self.pickedCompletion(i, sender);
+        }
+    }];
+}
+
+#pragma mark -Private Methods
+#define SPHERE_TITLE_LABEL_HEIGHT   30
 - (void)commonSetup
 {
     self.items = [NSMutableArray array];
     self.positions = [NSMutableArray array];
     self.snaps = [NSMutableArray array];
 
+    CGRect rect = CGRectZero;
+    
+    NSInteger count = self.menusViewArray.count;
     // setup the items
-    for (int i = 0; i < self.count; i++) {
-        UIImageView *item = [[UIImageView alloc] initWithImage:self.images[i]];
-        item.tag = kItemInitTag + i;
-        item.userInteractionEnabled = YES;
-        [self.superview addSubview:item];
+    for (int i = 0; i < count; i++) {
+        
+        UIImage *img = self.menusViewArray[i][key_sphere_menu_image];
+        NSString *title = self.menusViewArray[i][key_sphere_menu_title];
+        
+        rect.size.width = img.size.width;
+        rect.size.height = img.size.height + SPHERE_TITLE_LABEL_HEIGHT;
+        
+        UIControl *view = [[UIControl alloc] initWithFrame:rect];
+        view.tag = i;
+        view.backgroundColor = [UIColor clearColor];
+        [view addTarget:self action:@selector(menuItemPickedAction:) forControlEvents:UIControlEventTouchUpInside];
+        
+        UIImageView *imgView = [[UIImageView alloc] initWithImage:img];
+        imgView.frame = CGRectMake(0, 0, img.size.width, img.size.height);
+        [view addSubview:imgView];
+        
+        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, img.size.height, img.size.width, SPHERE_TITLE_LABEL_HEIGHT)];
+        label.backgroundColor = [UIColor clearColor];
+        label.text = title;
+        label.font = [UIFont systemFontOfSize:11];
+        label.textAlignment = NSTextAlignmentCenter;
+        label.textColor = [UIColor whiteColor];
+//        label.adjustsFontSizeToFitWidth = YES;
+        [view addSubview:label];
+        
+        view.center = self.center;
+        
+        [self.superview addSubview:view];
         
         CGPoint position = [self centerForSphereAtIndex:i];
-        item.center = self.center;
+        view.center = self.center;
         [self.positions addObject:[NSValue valueWithCGPoint:position]];
+
+        // UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panned:)];
+        // [view addGestureRecognizer:pan];
         
-        UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapped:)];
-        [item addGestureRecognizer:tap];
-        
-        UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panned:)];
-        [item addGestureRecognizer:pan];
-        
-        [self.items addObject:item];
+        [self.items addObject:view];
     }
     
     [self.superview bringSubviewToFront:self];
@@ -95,7 +263,7 @@ static const float kSphereDamping = 0.3;
     self.collision.translatesReferenceBoundsIntoBoundary = YES;
     self.collision.collisionDelegate = self;
     
-    for (int i = 0; i < self.count; i++) {
+    for (int i = 0; i < count; i++) {
         UISnapBehavior *snap = [[UISnapBehavior alloc] initWithItem:self.items[i] snapToPoint:self.center];
         snap.damping = self.sphereDamping;
         [self.snaps addObject:snap];
@@ -111,121 +279,54 @@ static const float kSphereDamping = 0.3;
     self.itemBehavior.friction = 0.5;
 }
 
-- (void)didMoveToSuperview
+- (void)removeAllSubViews:(void (^)())completion
 {
-    [self commonSetup];
-}
-
-- (void)removeFromSuperview
-{
-    for (int i = 0; i < self.count; i++) {
-        [self.items[i] removeFromSuperview];
-    }
-    
-    [super removeFromSuperview];
+    [UIView animateWithDuration:_sphereDamping
+                     animations:^{
+                         
+                         self.modelView.frame = CGRectMake(0, self.modelView.bounds.size.height, self.modelView.bounds.size.width, 0);
+                     }
+                     completion:^(BOOL finished) {
+                         
+                         [self.modelView removeFromSuperview];
+                         
+                         for (UIView *view in self.items) {
+                             [view removeFromSuperview];
+                         }
+                         [self removeFromSuperview];
+                         
+                         completion();
+                     }];
 }
 
 - (CGPoint)centerForSphereAtIndex:(int)index
 {
-    CGFloat firstAngle = M_PI + (M_PI_2 - self.angle) + index * self.angle;
+    CGFloat cosAngle = 0;
+    if (index*self.angle > M_PI_4)
+        cosAngle = M_PI - (index+1)*self.angle;
+    else
+        cosAngle = M_PI_2 + (M_PI_2 - (index+1)*self.angle);
+    
+    CGFloat sinAngle = (index+1)*self.angle;
+    
+//    CGFloat firstAngle = M_PI + (M_PI_4 - self.angle) + index * self.angle;
     CGPoint startPoint = self.center;
-    CGFloat x = startPoint.x + cos(firstAngle) * self.sphereLength;
-    CGFloat y = startPoint.y + sin(firstAngle) * self.sphereLength;
+    CGFloat x = startPoint.x + cos(cosAngle) * self.sphereLength;
+    //NSLog(@"start x = %f, index = %d, x = %f", startPoint.x, index, x);
+    CGFloat y = startPoint.y - sin(sinAngle) * self.sphereLength;
+    //NSLog(@"start y = %f, index = %d, y = %f", startPoint.y, index, y);
     CGPoint position = CGPointMake(x, y);
     return position;
 }
 
-- (void)tapped:(UITapGestureRecognizer *)gesture
-{
-    if ([self.delegate respondsToSelector:@selector(sphereDidSelected:)]) {
-        int tag = (int)gesture.view.tag;
-        tag -= kItemInitTag;
-        [self.delegate sphereDidSelected:tag];
-    }
-    
-    [self shrinkSubmenu];
-}
-
-- (void)startTapped:(UITapGestureRecognizer *)gesture
-{
-    [self.animator removeBehavior:self.collision];
-    [self.animator removeBehavior:self.itemBehavior];
-    [self removeSnapBehaviors];
-    
-    if (self.expanded) {
-        [self shrinkSubmenu];
-    } else {
-        [self expandSubmenu];
-    }
-}
-
+// TODO: --展开menu
 - (void)expandSubmenu
 {
-    for (int i = 0; i < self.count; i++) {
+    for (int i = 0; i < self.items.count; i++) {
         [self snapToPostionsWithIndex:i];
     }
     
     self.expanded = YES;
-}
-
-- (void)shrinkSubmenu
-{
-    [self.animator removeBehavior:self.collision];
-    
-    for (int i = 0; i < self.count; i++) {
-        [self snapToStartWithIndex:i];
-    }
-    
-    self.expanded = NO;
-}
-
-- (void)panned:(UIPanGestureRecognizer *)gesture
-{
-    UIView *touchedView = gesture.view;
-    if (gesture.state == UIGestureRecognizerStateBegan) {
-        [self.animator removeBehavior:self.itemBehavior];
-        [self.animator removeBehavior:self.collision];
-        [self removeSnapBehaviors];
-    } else if (gesture.state == UIGestureRecognizerStateChanged) {
-        touchedView.center = [gesture locationInView:self.superview];
-    } else if (gesture.state == UIGestureRecognizerStateEnded) {
-        self.bumper = touchedView;
-        [self.animator addBehavior:self.collision];
-        NSUInteger index = [self.items indexOfObject:touchedView];
-        
-        if (index != NSNotFound) {
-            [self snapToPostionsWithIndex:index];
-        }
-    }
-}
-
-- (void)collisionBehavior:(UICollisionBehavior *)behavior endedContactForItem:(id<UIDynamicItem>)item1 withItem:(id<UIDynamicItem>)item2
-{
-    [self.animator addBehavior:self.itemBehavior];
-    
-    if (item1 != self.bumper) {
-        NSUInteger index = (int)[self.items indexOfObject:item1];
-        if (index != NSNotFound) {
-            [self snapToPostionsWithIndex:index];
-        }
-    }
-    
-    if (item2 != self.bumper) {
-        NSUInteger index = (int)[self.items indexOfObject:item2];
-        if (index != NSNotFound) {
-            [self snapToPostionsWithIndex:index];
-        }
-    }
-}
-
-- (void)snapToStartWithIndex:(NSUInteger)index
-{
-    UISnapBehavior *snap = [[UISnapBehavior alloc] initWithItem:self.items[index] snapToPoint:self.center];
-    snap.damping = self.sphereDamping;
-    UISnapBehavior *snapToRemove = self.snaps[index];
-    self.snaps[index] = snap;
-    [self.animator removeBehavior:snapToRemove];
-    [self.animator addBehavior:snap];
 }
 
 - (void)snapToPostionsWithIndex:(NSUInteger)index
@@ -240,10 +341,45 @@ static const float kSphereDamping = 0.3;
     [self.animator addBehavior:snap];
 }
 
+// TODO: --关闭menu
+- (void)shrinkSubmenu:(void (^)())completion
+{
+    [self.animator removeBehavior:self.collision];
+    
+    for (int i = 0; i < self.items.count; i++) {
+        [self snapToStartWithIndex:i];
+    }
+    self.expanded = NO;
+    
+    
+    [self removeAllSubViews:^{
+        
+        completion();
+    }];
+}
+
+- (void)snapToStartWithIndex:(NSUInteger)index
+{
+    UISnapBehavior *snap = [[UISnapBehavior alloc] initWithItem:self.items[index] snapToPoint:self.center];
+    snap.damping = self.sphereDamping;
+    UISnapBehavior *snapToRemove = self.snaps[index];
+    self.snaps[index] = snap;
+    [self.animator removeBehavior:snapToRemove];
+    [self.animator addBehavior:snap];
+}
+
 - (void)removeSnapBehaviors
 {
     [self.snaps enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         [self.animator removeBehavior:obj];
+    }];
+}
+
+#pragma mark -SphereModelViewDelegate
+- (void)modelMenuViewDidTouchEnd:(id)menuView
+{
+    [self shrinkSubmenu:^{
+        
     }];
 }
 
