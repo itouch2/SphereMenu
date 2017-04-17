@@ -1,4 +1,4 @@
-#SphereMenu
+# SphereMenu
 
 SphereMenu is a fun menu powered by `UIDynamicAnimator`. Inspired by [Sphere](https://itunes.apple.com/hk/app/sphere-360o-photography/id335671384?mt=8).
 
