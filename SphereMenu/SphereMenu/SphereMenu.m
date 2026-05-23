@@ -31,6 +31,7 @@ static const float kSphereDamping = 0.3;
 
 @property (nonatomic, strong) id<UIDynamicItem> bumper;
 @property (nonatomic, assign) BOOL expanded;
+@property (nonatomic, assign) BOOL didSetup;
 
 @end
 
@@ -40,6 +41,7 @@ static const float kSphereDamping = 0.3;
 - (instancetype)initWithStartPoint:(CGPoint)startPoint startImage:(UIImage *)startImage submenuImages:(NSArray *)images
 {
     if (self = [super init]) {
+        NSParameterAssert(startImage);
         
         self.bounds = CGRectMake(0, 0, startImage.size.width, startImage.size.height);
         self.center = startPoint;
@@ -48,7 +50,13 @@ static const float kSphereDamping = 0.3;
         _sphereLength = kSphereLength;
         _sphereDamping = kSphereDamping;
         
-        _images = images;
+        NSMutableArray *validImages = [NSMutableArray array];
+        for (id image in images) {
+            if ([image isKindOfClass:[UIImage class]]) {
+                [validImages addObject:image];
+            }
+        }
+        _images = [validImages copy];
         _count = self.images.count;
         _start = [[UIImageView alloc] initWithImage:startImage];
         _start.userInteractionEnabled = YES;
@@ -103,7 +111,6 @@ static const float kSphereDamping = 0.3;
     
     self.itemBehavior = [[UIDynamicItemBehavior alloc] initWithItems:self.items];
     self.itemBehavior.allowsRotation = NO;
-    self.itemBehavior.elasticity = 1.2;
     self.itemBehavior.density = 0.5;
     self.itemBehavior.angularResistance = 5;
     self.itemBehavior.resistance = 10;
@@ -113,14 +120,33 @@ static const float kSphereDamping = 0.3;
 
 - (void)didMoveToSuperview
 {
+    if (!self.superview || self.didSetup) {
+        return;
+    }
+    
     [self commonSetup];
+    self.didSetup = YES;
 }
 
 - (void)removeFromSuperview
 {
+    [self.animator removeBehavior:self.collision];
+    [self.animator removeBehavior:self.itemBehavior];
+    [self removeSnapBehaviors];
+    self.animator = nil;
+    self.collision = nil;
+    self.itemBehavior = nil;
+    self.bumper = nil;
+    self.expanded = NO;
+    self.didSetup = NO;
+    
     for (int i = 0; i < self.count; i++) {
         [self.items[i] removeFromSuperview];
     }
+    
+    [self.items removeAllObjects];
+    [self.positions removeAllObjects];
+    [self.snaps removeAllObjects];
     
     [super removeFromSuperview];
 }
